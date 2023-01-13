@@ -11,17 +11,17 @@ public static class PmPrefs
   public static Dictionary<string, string> List = new Dictionary<string, string>();
   private static readonly string SaltKey = "xGLzdCWdJNEF7AEOGtWRtnNOZzObg4xa13MLLFZ1SbAy61ug4aCZQACypdN7UW1F";
   private static readonly string ViKey = "l9Qgcw8tYVksfNiP";
-  private static string secureKey;
-  private static ICryptoTransform decryptor;
-  private static ICryptoTransform encryptor;
-  private static byte[] keyBytes;
-  private static bool isStarted;
-  private static byte[] plainTextBytes;
-  private static byte[] cipherTextBytes;
-  private static MemoryStream memoryStream;
-  private static CryptoStream cryptoStream;
-  private static int decryptedByteCount;
-  private static string result;
+  private static string _secureKey;
+  private static ICryptoTransform _decryptor;
+  private static ICryptoTransform _encryptor;
+  private static byte[] _keyBytes;
+  private static bool _isStarted;
+  private static byte[] _plainTextBytes;
+  private static byte[] _cipherTextBytes;
+  private static MemoryStream _memoryStream;
+  private static CryptoStream _cryptoStream;
+  private static int _decryptedByteCount;
+  private static string _result;
 
   private static JsonSerializerSettings _jsonSettings;
   
@@ -29,22 +29,22 @@ public static class PmPrefs
   {
     _jsonSettings = new JsonSerializerSettings() {ReferenceLoopHandling = ReferenceLoopHandling.Ignore};
     
-    secureKey = PlayerPrefs.GetString("PMPREFS_SECURESTRING");
-    keyBytes = new Rfc2898DeriveBytes(PlayerPrefs.GetString("PMPREFS_SECURESTRING"), Encoding.ASCII.GetBytes(SaltKey)).GetBytes(32);
+    _secureKey = PlayerPrefs.GetString("PMPREFS_SECURESTRING");
+    _keyBytes = new Rfc2898DeriveBytes(PlayerPrefs.GetString("PMPREFS_SECURESTRING"), Encoding.ASCII.GetBytes(SaltKey)).GetBytes(32);
     RijndaelManaged rijndaelManaged1 = new RijndaelManaged();
     rijndaelManaged1.Mode = CipherMode.CBC;
     rijndaelManaged1.Padding = PaddingMode.Zeros;
-    encryptor = rijndaelManaged1.CreateEncryptor(keyBytes, Encoding.ASCII.GetBytes(ViKey));
+    _encryptor = rijndaelManaged1.CreateEncryptor(_keyBytes, Encoding.ASCII.GetBytes(ViKey));
     RijndaelManaged rijndaelManaged2 = new RijndaelManaged();
     rijndaelManaged2.Mode = CipherMode.CBC;
     rijndaelManaged2.Padding = PaddingMode.None;
-    decryptor = rijndaelManaged2.CreateDecryptor(keyBytes, Encoding.ASCII.GetBytes(ViKey));
-    isStarted = true;
+    _decryptor = rijndaelManaged2.CreateDecryptor(_keyBytes, Encoding.ASCII.GetBytes(ViKey));
+    _isStarted = true;
   }
 
   public static void Save(string key, object value)
   {
-    if (!isStarted)
+    if (!_isStarted)
       Start();
     string str = JsonConvert.SerializeObject(value, _jsonSettings);
     
@@ -58,30 +58,29 @@ public static class PmPrefs
 
   public static T Load<T>(string key)
   {
-    if (!isStarted)
+    if (!_isStarted)
       Start();
-    
-    T obj;
-    TryGetData<T>(key, out obj);
+
+    TryGetData<T>(key, out var obj);
     
     return obj;
   }
 
   public static void DeleteAll()
   {
-    if (!isStarted)
+    if (!_isStarted)
       Start();
     
-    secureKey = PlayerPrefs.GetString("PMPREFS_SECURESTRING");
+    _secureKey = PlayerPrefs.GetString("PMPREFS_SECURESTRING");
     PlayerPrefs.DeleteAll();
-    PlayerPrefs.SetString("PMPREFS_SECURESTRING", secureKey);
+    PlayerPrefs.SetString("PMPREFS_SECURESTRING", _secureKey);
   }
 
   public static bool HasKey(string key) => PlayerPrefs.HasKey(key);
 
   public static void DeleteKey(string key)
   {
-    if (!isStarted)
+    if (!_isStarted)
       Start();
     
     PlayerPrefs.DeleteKey(key);
@@ -89,7 +88,7 @@ public static class PmPrefs
 
   public static void SaveAll()
   {
-    if (!isStarted)
+    if (!_isStarted)
       Start();
     
     PlayerPrefs.Save();
@@ -97,71 +96,71 @@ public static class PmPrefs
 
   public static string Encrypt(string plainText)
   {
-    if (!isStarted)
+    if (!_isStarted)
       Start();
     
-    plainTextBytes = Encoding.UTF8.GetBytes(plainText.Trim());
-    using (memoryStream = new MemoryStream())
+    _plainTextBytes = Encoding.UTF8.GetBytes(plainText.Trim());
+    using (_memoryStream = new MemoryStream())
     {
-      using (cryptoStream = new CryptoStream((Stream) memoryStream, encryptor, CryptoStreamMode.Write))
+      using (_cryptoStream = new CryptoStream((Stream) _memoryStream, _encryptor, CryptoStreamMode.Write))
       {
-        cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
-        cryptoStream.FlushFinalBlock();
-        cipherTextBytes = memoryStream.ToArray();
-        cryptoStream.Close();
+        _cryptoStream.Write(_plainTextBytes, 0, _plainTextBytes.Length);
+        _cryptoStream.FlushFinalBlock();
+        _cipherTextBytes = _memoryStream.ToArray();
+        _cryptoStream.Close();
       }
-      memoryStream.Close();
+      _memoryStream.Close();
     }
-    return Convert.ToBase64String(cipherTextBytes);
+    return Convert.ToBase64String(_cipherTextBytes);
   }
 
   public static string Decrypt(string encryptedText)
   {
-    if (!isStarted)
+    if (!_isStarted)
       Start();
-    cipherTextBytes = Convert.FromBase64String(encryptedText);
-    memoryStream = new MemoryStream(cipherTextBytes);
-    cryptoStream = new CryptoStream((Stream) memoryStream, decryptor, CryptoStreamMode.Read);
-    plainTextBytes = new byte[cipherTextBytes.Length];
-    decryptedByteCount = cryptoStream.Read(plainTextBytes, 0, plainTextBytes.Length);
-    memoryStream.Close();
-    cryptoStream.Close();
-    return Encoding.UTF8.GetString(plainTextBytes, 0, decryptedByteCount).TrimEnd("\0".ToCharArray());
+    _cipherTextBytes = Convert.FromBase64String(encryptedText);
+    _memoryStream = new MemoryStream(_cipherTextBytes);
+    _cryptoStream = new CryptoStream((Stream) _memoryStream, _decryptor, CryptoStreamMode.Read);
+    _plainTextBytes = new byte[_cipherTextBytes.Length];
+    _decryptedByteCount = _cryptoStream.Read(_plainTextBytes, 0, _plainTextBytes.Length);
+    _memoryStream.Close();
+    _cryptoStream.Close();
+    return Encoding.UTF8.GetString(_plainTextBytes, 0, _decryptedByteCount).TrimEnd("\0".ToCharArray());
   }
 
   private static void SaveIt(string key, string value)
   {
-    if (!isStarted)
+    if (!_isStarted)
       Start();
-    if (!string.IsNullOrEmpty(secureKey))
+    if (!string.IsNullOrEmpty(_secureKey))
       value = Encrypt(value);
     PlayerPrefs.SetString(key, value);
   }
 
   private static string LoadIt(string key)
   {
-    if (!isStarted)
+    if (!_isStarted)
       Start();
     return PlayerPrefs.GetString(key);
   }
 
   private static void TryGetData<T>(string key, out T value)
   {
-    if (!isStarted)
+    if (!_isStarted)
       Start();
-    result = LoadIt(key);
-    if (!string.IsNullOrEmpty(secureKey))
-      result = Decrypt(result);
+    _result = LoadIt(key);
+    if (!string.IsNullOrEmpty(_secureKey))
+      _result = Decrypt(_result);
     value = default (T);
-    if (string.IsNullOrEmpty(result))
+    if (string.IsNullOrEmpty(_result))
       return;
     try
     {
-      value = JsonConvert.DeserializeObject<T>(result);
+      value = JsonConvert.DeserializeObject<T>(_result);
       if (List.ContainsKey(key))
-        List[key] = result;
+        List[key] = _result;
       else
-        List.Add(key, result);
+        List.Add(key, _result);
     }
     catch (Exception ex)
     {
