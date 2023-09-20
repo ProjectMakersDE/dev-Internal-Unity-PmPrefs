@@ -1,0 +1,10 @@
+.toolbar-btn {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    flex-direction: row;
+    flex-grow: 1;
+    flex-shrink: 0;
+    -unity-text-align: middle-center;
+}

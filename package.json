@@ -1,0 +1,19 @@
+{
+  "name": "com.projectmakers.pmprefs",
+  "version": "2.1.0",
+  "displayName": "PM_Prefs",
+  "description": "Save and load with PmPrefs as easy as never before.\nAnyone who has ever had to save in Unity knows how complex that can be.\nThere are different methods here, one of which stands out very clearly.",
+  "unity": "2018.1",
+  "unityRelease": "0b5",
+  "keywords": [
+    "ProjectMakers",
+    "PmPrefs",
+	"pmprefs"
+  ],
+  "author": {
+    "name": "ProjectMakers",
+    "email": "info@projectmakers.de",
+    "url": "https://projectmakers.de"
+  },
+  "type": "tool"
+}
