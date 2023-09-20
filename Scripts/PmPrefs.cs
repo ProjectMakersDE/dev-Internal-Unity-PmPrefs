@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,8 +22,6 @@ namespace PM.Plugins
       private static ICryptoTransform _decryptor;
       private static ICryptoTransform _encryptor;
 
-      private static JsonSerializerSettings _jsonSettings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
-
       private static string _oldSecureKey;
 
       private static List<string> List
@@ -32,7 +29,7 @@ namespace PM.Plugins
          get
          {
             if (_list == null && HasKey(KeyList))
-               _list = JsonConvert.DeserializeObject<List<string>>(PlayerPrefs.GetString(KeyList), _jsonSettings);
+               _list = JsonUtility.FromJson<List<string>>(PlayerPrefs.GetString(KeyList));
 
             return _list ?? new List<string>();
          }
@@ -44,7 +41,8 @@ namespace PM.Plugins
 
          List.Add(key);
          _list = List;
-         PlayerPrefs.SetString(KeyList, JsonConvert.SerializeObject(_list));
+         
+         PlayerPrefs.SetString(KeyList, JsonUtility.ToJson(_list));
       }
 
       private static ICryptoTransform Decryptor()
@@ -82,10 +80,11 @@ namespace PM.Plugins
 
       public static void Save(string key, object value)
       {
-         string str = JsonConvert.SerializeObject(value, _jsonSettings);
+         string str = JsonUtility.ToJson(value);
          AddKeyToList(key);
          SaveIt(key, str);
       }
+
       public static T Load<TK, T>(TK key, T defaultValue = default)
       {
          return TryGetData(key.ToString(), out T obj) ? obj : defaultValue;
@@ -145,7 +144,7 @@ namespace PM.Plugins
 
          try
          {
-            value = JsonConvert.DeserializeObject<T>(result);
+            value = JsonUtility.FromJson<T>(result);
             return true;
          }
          catch (Exception ex)

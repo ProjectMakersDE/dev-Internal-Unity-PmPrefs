@@ -44,7 +44,9 @@ namespace PM.Plugins
          _keyLabel.text = _data.Key;
          _valueLabel.SetValueWithoutNotify(_data.Value);
          _deleteToggle.SetValueWithoutNotify(_data.DeleteMarker);
-
+         
+         _root.style.height = _valueLabel.resolvedStyle.height + 10;
+         _root.MarkDirtyRepaint();
          _valueLabel.RegisterValueChangedCallback(OnValueChanged);
          _deleteToggle.RegisterValueChangedCallback(OnDeleteChanged);
       }
@@ -83,6 +85,8 @@ namespace PM.Plugins
          _data.Value = evt.newValue;
          _isChanged = true;
 
+         _root.style.height = _valueLabel.resolvedStyle.height + 10;
+         _root.MarkDirtyRepaint();
          _valueLabel.style.borderBottomWidth = 2;
          _valueLabel.style.borderLeftWidth = 2;
          _valueLabel.style.borderRightWidth = 2;

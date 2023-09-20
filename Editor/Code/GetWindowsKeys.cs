@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Linq;
 using System.Text;
 using Microsoft.Win32;
@@ -58,4 +57,3 @@ namespace PM.Plugins
       }
    }
 }
-#endif
